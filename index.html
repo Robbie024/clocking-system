@@ -106,9 +106,8 @@
 
     function checkSubmissionDate() {
       const today = new Date().toISOString().split('T')[0];
-      const lastClockInDate = localStorage.getItem('lastClockInDate');
-      const lastClockOutDate = localStorage.getItem('lastClockOutDate');
-      const clockingState = localStorage.getItem('clockingState');
+      const hasClockedIn = localStorage.getItem('hasClockedIn') === 'true';
+      const hasClockedOut = localStorage.getItem('hasClockedOut') === 'true';
 
       // Check if this is a clock-in attempt
       if (window.location.href.includes('clock-in')) {
