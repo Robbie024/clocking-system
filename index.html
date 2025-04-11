@@ -118,6 +118,23 @@
       }
     }
 
+    function preventMultipleSubmissions() {
+      const form = FormApp.openById('1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw'); // Replace with your form's ID
+      const responses = form.getResponses();
+      const today = new Date().toDateString();
+
+      const userEmail = Session.getActiveUser().getEmail(); // Get the user's email
+      const hasSubmittedToday = responses.some(response => {
+        const responseDate = new Date(response.getTimestamp()).toDateString();
+        const emailAnswer = response.getItemResponses().find(item => item.getTitle() === "Email").getResponse();
+        return responseDate === today && emailAnswer === userEmail;
+      });
+
+      if (hasSubmittedToday) {
+        throw new Error("You have already submitted the form today.");
+      }
+    }
+
     window.onload = checkLocation;
   </script>
 </body>
