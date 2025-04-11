@@ -109,7 +109,7 @@
       const lastSubmissionDate = localStorage.getItem('lastSubmissionDate');
 
       if (lastSubmissionDate === today) {
-        document.getElementById("warning").textContent = "❌ You have already clocked out today.";
+        document.getElementById("warning").textContent = "❌ You have already clocked in today.";
         document.getElementById("warning").style.display = "block";
       } else {
         localStorage.setItem('lastSubmissionDate', today); // Save today's date
