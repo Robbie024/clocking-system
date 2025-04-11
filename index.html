@@ -48,8 +48,8 @@
   <!-- Logo (Optional) -->
   <img src="logo.png" alt="Raloc Logistics Logo" class="logo">
 
-  <h1>Employee Clock-In </h1>
-  <p>Please ensure you're at the office premises to clock in.</p>
+  <h1 id="pageTitle">Employee Clock-In</h1>
+  <p id="pageDescription">Please ensure you're at the office premises to clock in.</p>
 
   <div class="warning" id="warning">
     ❌ You must be at either the Accra or Takoradi branch to clock in or out.
@@ -105,37 +105,54 @@
     }
 
     function checkSubmissionDate() {
-      const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-      const lastSubmissionDate = localStorage.getItem('lastSubmissionDate');
+      const today = new Date().toISOString().split('T')[0];
+      const lastClockInDate = localStorage.getItem('lastClockInDate');
+      const lastClockOutDate = localStorage.getItem('lastClockOutDate');
+      const clockingState = localStorage.getItem('clockingState');
 
-      if (lastSubmissionDate === today) {
-        document.getElementById("warning").textContent = "❌ You have already clocked in today.";
-        document.getElementById("warning").style.display = "block";
-      } else {
-        localStorage.setItem('lastSubmissionDate', today); // Save today's date
-        document.getElementById("form").style.display = "block";
-        document.getElementById("warning").style.display = "none";
+      // Check if this is a clock-in attempt
+      if (window.location.href.includes('clock-in')) {
+        if (lastClockInDate === today && clockingState !== 'out') {
+          document.getElementById("warning").textContent = "❌ You have already clocked in today.";
+          document.getElementById("warning").style.display = "block";
+        } else {
+          localStorage.setItem('lastClockInDate', today);
+          localStorage.setItem('clockingState', 'in');
+          document.getElementById("form").style.display = "block";
+          document.getElementById("warning").style.display = "none";
+        }
+      }
+      // Check if this is a clock-out attempt
+      else if (window.location.href.includes('clock-out')) {
+        if (lastClockInDate !== today) {
+          document.getElementById("warning").textContent = "❌ You haven't clocked in today.";
+          document.getElementById("warning").style.display = "block";
+        } else if (lastClockOutDate === today) {
+          document.getElementById("warning").textContent = "❌ You have already clocked out today.";
+          document.getElementById("warning").style.display = "block";
+        } else {
+          localStorage.setItem('lastClockOutDate', today);
+          localStorage.setItem('clockingState', 'out');
+          document.getElementById("form").style.display = "block";
+          document.getElementById("warning").style.display = "none";
+        }
       }
     }
 
-    function preventMultipleSubmissions() {
-      const form = FormApp.openById('1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw'); // Replace with your form's ID
-      const responses = form.getResponses();
-      const today = new Date().toDateString();
-
-      const userEmail = Session.getActiveUser().getEmail(); // Get the user's email
-      const hasSubmittedToday = responses.some(response => {
-        const responseDate = new Date(response.getTimestamp()).toDateString();
-        const emailAnswer = response.getItemResponses().find(item => item.getTitle() === "Email").getResponse();
-        return responseDate === today && emailAnswer === userEmail;
-      });
-
-      if (hasSubmittedToday) {
-        throw new Error("You have already submitted the form today.");
+    function updatePageTitle() {
+      if (window.location.href.includes('clock-in')) {
+        document.getElementById('pageTitle').textContent = 'Employee Clock-In';
+        document.getElementById('pageDescription').textContent = 'Please ensure you\'re at the office premises to clock in.';
+      } else if (window.location.href.includes('clock-out')) {
+        document.getElementById('pageTitle').textContent = 'Employee Clock-Out';
+        document.getElementById('pageDescription').textContent = 'Please ensure you\'re at the office premises to clock out.';
       }
     }
 
-    window.onload = checkLocation;
+    window.onload = function() {
+      updatePageTitle();
+      checkLocation();
+    };
   </script>
 </body>
 </html>
