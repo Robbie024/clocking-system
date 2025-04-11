@@ -55,7 +55,11 @@
     ❌ You must be at either the Accra or Takoradi branch to clock in or out.
   </div>
 
-  <div class="form-container" id="form">
+  <div class="form-container" id="clockInForm">
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw/viewform?embedded=true" allowfullscreen>Loading…</iframe>
+  </div>
+
+  <div class="form-container" id="clockOutForm">
     <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw/viewform?embedded=true" allowfullscreen>Loading…</iframe>
   </div>
 
@@ -106,33 +110,30 @@
 
     function checkSubmissionDate() {
       const today = new Date().toISOString().split('T')[0];
-      const hasClockedIn = localStorage.getItem('hasClockedIn') === 'true';
-      const hasClockedOut = localStorage.getItem('hasClockedOut') === 'true';
+      const clockInDate = localStorage.getItem('clockInDate');
+      const clockOutDate = localStorage.getItem('clockOutDate');
 
-      // Check if this is a clock-in attempt
       if (window.location.href.includes('clock-in')) {
-        if (lastClockInDate === today && clockingState !== 'out') {
+        if (clockInDate === today) {
           document.getElementById("warning").textContent = "❌ You have already clocked in today.";
           document.getElementById("warning").style.display = "block";
         } else {
-          localStorage.setItem('lastClockInDate', today);
-          localStorage.setItem('clockingState', 'in');
-          document.getElementById("form").style.display = "block";
+          localStorage.setItem('clockInDate', today);
+          document.getElementById("clockInForm").style.display = "block";
+          document.getElementById("clockOutForm").style.display = "none";
           document.getElementById("warning").style.display = "none";
         }
-      }
-      // Check if this is a clock-out attempt
-      else if (window.location.href.includes('clock-out')) {
-        if (lastClockInDate !== today) {
-          document.getElementById("warning").textContent = "❌ You haven't clocked in today.";
-          document.getElementById("warning").style.display = "block";
-        } else if (lastClockOutDate === today) {
+      } else if (window.location.href.includes('clock-out')) {
+        if (clockOutDate === today) {
           document.getElementById("warning").textContent = "❌ You have already clocked out today.";
           document.getElementById("warning").style.display = "block";
+        } else if (clockInDate !== today) {
+          document.getElementById("warning").textContent = "❌ You haven't clocked in today.";
+          document.getElementById("warning").style.display = "block";
         } else {
-          localStorage.setItem('lastClockOutDate', today);
-          localStorage.setItem('clockingState', 'out');
-          document.getElementById("form").style.display = "block";
+          localStorage.setItem('clockOutDate', today);
+          document.getElementById("clockOutForm").style.display = "block";
+          document.getElementById("clockInForm").style.display = "none";
           document.getElementById("warning").style.display = "none";
         }
       }
