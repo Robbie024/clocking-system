@@ -118,9 +118,10 @@
 
     function checkSubmissionDate() {
       const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-      clockInDate = localStorage.getItem('clockInDate'); // Retrieve the last clock-in date from localStorage
+      const clockInDate = localStorage.getItem('clockInDate'); // Retrieve the last clock-in date from localStorage
 
-      console.log('Clock-In Date:', clockInDate); // Log the value of clockInDate
+      console.log('Today\'s Date:', today); // Log today's date
+      console.log('Clock-In Date from Local Storage:', clockInDate); // Log the value of clockInDate
 
       if (clockInDate === today) {
         // If the user has already clocked in today, show a warning
