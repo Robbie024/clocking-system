@@ -75,7 +75,7 @@
     function getDistance(lat1, lon1, lat2, lon2) {
       const R = 6371; // Earth radius in km
       const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
+      const dLon = toRad(lon1 - lon2);
       const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -95,7 +95,7 @@
           );
 
           if (nearBranch) {
-            // If the user is near a branch, proceed to check submission date
+            // If the user is near a branch, allow clock-in
             checkSubmissionDate();
           } else {
             // If the user is not near a branch, show a warning
@@ -114,20 +114,30 @@
       }
     }
 
+    let clockInDate; // Define clockInDate globally
+
     function checkSubmissionDate() {
       const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-      const clockInDate = localStorage.getItem('clockInDate'); // Retrieve the last clock-in date from localStorage
+      clockInDate = localStorage.getItem('clockInDate'); // Retrieve the last clock-in date from localStorage
+
+      console.log('Clock-In Date:', clockInDate); // Log the value of clockInDate
 
       if (clockInDate === today) {
         // If the user has already clocked in today, show a warning
         document.getElementById("warning").textContent = "❌ You have already clocked in today.";
         document.getElementById("warning").style.display = "block";
+        document.getElementById("clockInForm").style.display = "none"; // Hide the clock-in form
       } else {
         // If the user hasn't clocked in today, allow clock-in
-        localStorage.setItem('clockInDate', today); // Save today's date as the clock-in date
-        document.getElementById("clockInForm").style.display = "block"; // Show the clock-in form
-        document.getElementById("warning").style.display = "none"; // Hide any warnings
+        allowClockIn();
       }
+    }
+
+    function allowClockIn() {
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem('clockInDate', today); // Save today's date as the clock-in date
+      document.getElementById("clockInForm").style.display = "block"; // Show the clock-in form
+      document.getElementById("warning").style.display = "none"; // Hide any warnings
     }
 
     function updatePageTitle() {
