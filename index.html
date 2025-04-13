@@ -51,17 +51,15 @@
   <h1 id="pageTitle">Employee Clock-In</h1>
   <p id="pageDescription">Please ensure you're at the office premises to clock in.</p>
 
-  <div class="warning" id="warning">
-    ❌ You must be at either the Accra or Takoradi branch to clock in or out.
+  <div class="warning" id="warning" style="display: none;">
+    ❌ You must be at either the Accra or Takoradi branch to clock in.
   </div>
 
-  <div class="form-container" id="clockInForm">
+  <div class="form-container" id="clockInForm" style="display: none;">
     <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw/viewform?embedded=true" allowfullscreen>Loading…</iframe>
   </div>
 
-  <div class="form-container" id="clockOutForm">
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw/viewform?embedded=true" allowfullscreen>Loading…</iframe>
-  </div>
+  
 
   <script>
     const branches = [
@@ -91,51 +89,44 @@
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
 
+          // Check if the user is near any of the branches
           const nearBranch = branches.find(branch => 
             getDistance(userLat, userLng, branch.lat, branch.lng) <= maxDistance
           );
 
           if (nearBranch) {
+            // If the user is near a branch, proceed to check submission date
             checkSubmissionDate();
           } else {
+            // If the user is not near a branch, show a warning
+            document.getElementById("warning").textContent = "❌ You must be at either the Accra or Takoradi branch to clock in.";
             document.getElementById("warning").style.display = "block";
           }
         }, error => {
+          // Handle location access errors
           document.getElementById("warning").textContent = "❌ Location access denied. Please enable GPS.";
+          document.getElementById("warning").style.display = "block";
         });
       } else {
+        // Handle browsers that do not support geolocation
         document.getElementById("warning").textContent = "❌ Your browser does not support location services.";
+        document.getElementById("warning").style.display = "block";
       }
     }
 
     function checkSubmissionDate() {
-      const today = new Date().toISOString().split('T')[0];
-      const clockInDate = localStorage.getItem('clockInDate');
-      const clockOutDate = localStorage.getItem('clockOutDate');
+      const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+      const clockInDate = localStorage.getItem('clockInDate'); // Retrieve the last clock-in date from localStorage
 
-      if (window.location.href.includes('clock-in')) {
-        if (clockInDate === today) {
-          document.getElementById("warning").textContent = "❌ You have already clocked in today.";
-          document.getElementById("warning").style.display = "block";
-        } else {
-          localStorage.setItem('clockInDate', today);
-          document.getElementById("clockInForm").style.display = "block";
-          document.getElementById("clockOutForm").style.display = "none";
-          document.getElementById("warning").style.display = "none";
-        }
-      } else if (window.location.href.includes('clock-out')) {
-        if (clockOutDate === today) {
-          document.getElementById("warning").textContent = "❌ You have already clocked out today.";
-          document.getElementById("warning").style.display = "block";
-        } else if (clockInDate !== today) {
-          document.getElementById("warning").textContent = "❌ You haven't clocked in today.";
-          document.getElementById("warning").style.display = "block";
-        } else {
-          localStorage.setItem('clockOutDate', today);
-          document.getElementById("clockOutForm").style.display = "block";
-          document.getElementById("clockInForm").style.display = "none";
-          document.getElementById("warning").style.display = "none";
-        }
+      if (clockInDate === today) {
+        // If the user has already clocked in today, show a warning
+        document.getElementById("warning").textContent = "❌ You have already clocked in today.";
+        document.getElementById("warning").style.display = "block";
+      } else {
+        // If the user hasn't clocked in today, allow clock-in
+        localStorage.setItem('clockInDate', today); // Save today's date as the clock-in date
+        document.getElementById("clockInForm").style.display = "block"; // Show the clock-in form
+        document.getElementById("warning").style.display = "none"; // Hide any warnings
       }
     }
 
@@ -150,8 +141,7 @@
     }
 
     window.onload = function() {
-      updatePageTitle();
-      checkLocation();
+      checkLocation(); // Check the user's location on page load
     };
   </script>
 </body>
