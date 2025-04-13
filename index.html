@@ -84,10 +84,14 @@
     }
 
     function checkLocation() {
+      console.log("Checking location..."); // Add this to confirm the function is running
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
+
+          console.log("User's Latitude:", userLat); // Log user's latitude
+          console.log("User's Longitude:", userLng); // Log user's longitude
 
           // Check if the user is near any of the branches
           const nearBranch = branches.find(branch => 
@@ -95,20 +99,20 @@
           );
 
           if (nearBranch) {
-            // If the user is near a branch, allow clock-in
+            console.log("User is near a branch:", nearBranch.name); // Log the branch name
             checkSubmissionDate();
           } else {
-            // If the user is not near a branch, show a warning
+            console.log("User is not near any branch."); // Log if the user is not near a branch
             document.getElementById("warning").textContent = "❌ You must be at either the Accra or Takoradi branch to clock in.";
             document.getElementById("warning").style.display = "block";
           }
         }, error => {
-          // Handle location access errors
+          console.log("Location access error:", error); // Log location access errors
           document.getElementById("warning").textContent = "❌ Location access denied. Please enable GPS.";
           document.getElementById("warning").style.display = "block";
         });
       } else {
-        // Handle browsers that do not support geolocation
+        console.log("Geolocation is not supported by this browser."); // Log if geolocation is not supported
         document.getElementById("warning").textContent = "❌ Your browser does not support location services.";
         document.getElementById("warning").style.display = "block";
       }
