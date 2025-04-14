@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Clock-In System</title>
   <link rel="manifest" href="manifest.json">
   <style>
@@ -21,10 +21,10 @@
       font-weight: bold;
       margin-top: 20px;
     }
-    button {
-      padding: 10px 20px;
+    button, input {
+      padding: 10px;
       font-size: 16px;
-      cursor: pointer;
+      margin: 10px;
     }
   </style>
 </head>
@@ -32,95 +32,117 @@
   <header>
     <img src="logo.png" alt="Company Logo" style="width: 150px; margin-top: 20px;">
   </header>
+
   <h1>Clock-In System</h1>
-  <p>Click the button below to clock in:</p>
+  <p>Enter your full name and click the button below to clock in:</p>
+
+  <input type="text" id="fullName" placeholder="Enter full name" />
+  <br />
   <button onclick="checkLocation()">Clock In</button>
+
   <div class="warning" id="warning" style="display: none;"></div>
-  <div class="form-container" id="clockinform">
-    <form id="clockinform" action="submit.php" method="POST">
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name" required>
-      <label for="employeeId">Employee ID:</label>
-      <input type="text" id="employeeId" name="employeeId" required>
-      <button type="submit">Submit</button>
-    </form>
+
+  <div class="form-container" id="clockin-container">
+    <iframe id="clockin-iframe" width="640" height="800" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe>
   </div>
+
   <script>
     const branches = [
       { name: "Accra", lat: 5.6580393, lng: -0.2651867 },
       { name: "Takoradi", lat: 4.897427, lng: -1.764115 }
     ];
-    const maxDistance = 2.5; // Increase to 2 kilometers for testing
+    const maxDistance = 10; // km
 
     function toRad(deg) {
       return deg * Math.PI / 180;
     }
 
     function getDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371; // Earth radius in kilometers
+      const R = 6371;
       const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lat2 - lon1);
-      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
     }
 
     function checkLocation() {
-      console.log("Checking location..."); // Log when the function is called
+      const fullName = document.getElementById("fullName").value.trim();
+      if (!fullName) {
+        document.getElementById("warning").textContent = "❌ Please enter your full name.";
+        document.getElementById("warning").style.display = "block";
+        return;
+      }
+
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
 
-          // Log the user's GPS coordinates
-          console.log("Your GPS Coordinates:");
-          console.log("Latitude:", userLat);
-          console.log("Longitude:", userLng);
-
           let isNearBranch = false;
-
           branches.forEach(branch => {
             const distance = getDistance(userLat, userLng, branch.lat, branch.lng);
-            console.log(`Distance to ${branch.name}:`, distance, "km"); // Log the distance to each branch
-
             if (distance <= maxDistance) {
               isNearBranch = true;
-              console.log("User is near a branch:", branch.name); // Log the branch name
-              checkSubmissionDate();
+              checkDuplicate(fullName, isDuplicate => {
+                if (isDuplicate) {
+                  document.getElementById("warning").textContent = "❌ You have already submitted today.";
+                  document.getElementById("warning").style.display = "block";
+                } else {
+                  checkSubmissionDate(fullName);
+                }
+              });
             }
           });
 
           if (!isNearBranch) {
-            console.log("User is not near any branch."); // Log if the user is not near a branch
             document.getElementById("warning").textContent = "❌ You must be at either the Accra or Takoradi branch to clock in.";
             document.getElementById("warning").style.display = "block";
           }
         }, error => {
-          console.error("Geolocation error:", error); // Log geolocation errors
+          console.error("Geolocation error:", error);
           document.getElementById("warning").textContent = "❌ Location access denied. Please enable GPS.";
           document.getElementById("warning").style.display = "block";
         });
       } else {
-        console.error("Geolocation is not supported by this browser."); // Log if geolocation is not supported
         document.getElementById("warning").textContent = "❌ Your browser does not support location services.";
         document.getElementById("warning").style.display = "block";
       }
     }
 
-    function checkSubmissionDate() {
-      const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-      const clockInDate = localStorage.getItem('clockInDate'); // Retrieve the last clock-in date from localStorage
+    function checkSubmissionDate(fullName) {
+      // Skip localStorage check and proceed directly to form
+      document.getElementById("clockin-container").style.display = "block";
+      document.getElementById("warning").style.display = "none";
+      loadFormWithTimestamp(fullName);
+    }
 
-      if (clockInDate === today) {
-        document.getElementById("warning").textContent = "❌ You have already clocked in today.";
-        document.getElementById("warning").style.display = "block";
-      } else {
-        localStorage.setItem('clockInDate', today); // Save today's date as the clock-in date
-        document.getElementById("clockInForm").style.display = "block"; // Show the clock-in form
-        document.getElementById("warning").style.display = "none"; // Hide any warnings
-      }
+    function loadFormWithTimestamp(fullName) {
+      const iframe = document.getElementById('clockin-iframe');
+      const timestamp = Date.now();
+      iframe.src = `https://docs.google.com/forms/d/e/1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw/viewform?embedded=true&entry.648050963=${encodeURIComponent(fullName)}&entry.timestamp=${timestamp}`;
+    }
+
+    function checkDuplicate(fullName, callback) {
+      const scriptUrl = "https://script.google.com/macros/s/AKfycbwSDlXhRUnjK9NsrYQiWTlUS_6EPSJjikVvtm86yFJoUxAkL_413lUwdI2vwGCPqbpr/exec";
+
+      fetch(`${scriptUrl}?fullName=${encodeURIComponent(fullName)}`)
+        .then(response => response.text())
+        .then(result => {
+          // Check if the result indicates a duplicate response
+          if (result === "DUPLICATE") {
+            document.getElementById("warning").textContent = "❌ You have already submitted today.";
+            document.getElementById("warning").style.display = "block";
+            callback(true);
+          } else {
+            callback(false);
+          }
+        })
+        .catch(error => {
+          console.error("Error checking duplicate:", error);
+          document.getElementById("warning").textContent = "❌ Error verifying submission. Try again later.";
+          document.getElementById("warning").style.display = "block";
+        });
     }
   </script>
 </body>
