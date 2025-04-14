@@ -35,7 +35,6 @@
   <div class="warning" id="warning" style="display: none;"></div>
   <div class="form-container" id="clockInForm">
     <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw/viewform?embedded=true" allowfullscreen>Loading…</iframe>
-  </div>
   <script>
     const branches = [
       { name: "Accra", lat: 5.6580393, lng: -0.2651867 },
@@ -50,7 +49,7 @@
     function getDistance(lat1, lon1, lat2, lon2) {
       const R = 6371; // Earth radius in kilometers
       const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
+      const dLon = toRad(lat2 - lon2);
       const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
