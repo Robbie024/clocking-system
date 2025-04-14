@@ -66,16 +66,12 @@
       { name: "Accra", lat: 5.6580393, lng: -0.2651867 },
       { name: "Takoradi", lat: 4.897427, lng: -1.764115 }
     ];
-    const maxDistance = 1; // in kilometers
-
-    function toRad(deg) {
-      return deg * Math.PI / 180;
-    }
+    const maxDistance = 1.5; // in kilometers
 
     function getDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371; // Earth radius in km
+      const R = 6371; // Earth radius in kilometers
       const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon1 - lon2);
+      const dLon = toRad(lat2 - lon1);
       const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -83,8 +79,12 @@
       return R * c;
     }
 
+    function toRad(deg) {
+      return deg * Math.PI / 180;
+    }
+
     function checkLocation() {
-      console.log("Checking location..."); // Add this to confirm the function is running
+      console.log("Checking location..."); // Confirm the function is running
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           const userLat = position.coords.latitude;
@@ -94,9 +94,11 @@
           console.log("User's Longitude:", userLng); // Log user's longitude
 
           // Check if the user is near any of the branches
-          const nearBranch = branches.find(branch => 
-            getDistance(userLat, userLng, branch.lat, branch.lng) <= maxDistance
-          );
+          const nearBranch = branches.find(branch => {
+            const distance = getDistance(userLat, userLng, branch.lat, branch.lng);
+            console.log(`Distance to ${branch.name}:`, distance, "km");
+            return distance <= maxDistance;
+          });
 
           if (nearBranch) {
             console.log("User is near a branch:", nearBranch.name); // Log the branch name
