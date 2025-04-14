@@ -37,7 +37,14 @@
   <button onclick="checkLocation()">Clock In</button>
   <div class="warning" id="warning" style="display: none;"></div>
   <div class="form-container" id="clockInForm">
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw/viewform?embedded=true" allowfullscreen>Loading…</iframe>
+    <form id="clockInForm" action="submit.php" method="POST">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+      <label for="employeeId">Employee ID:</label>
+      <input type="text" id="employeeId" name="employeeId" required>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
   <script>
     const branches = [
       { name: "Accra", lat: 5.6580393, lng: -0.2651867 },
