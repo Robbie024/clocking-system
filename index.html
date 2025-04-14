@@ -43,7 +43,7 @@
       { name: "Accra", lat: 5.6580393, lng: -0.2651867 },
       { name: "Takoradi", lat: 4.897427, lng: -1.764115 }
     ];
-    const maxDistance = 2; // Increase to 2 kilometers for testing
+    const maxDistance = 2.5; // Increase to 2 kilometers for testing
 
     function toRad(deg) {
       return deg * Math.PI / 180;
@@ -70,37 +70,27 @@
           console.log("User's Latitude:", userLat); // Log user's latitude
           console.log("User's Longitude:", userLng); // Log user's longitude
 
-          const nearBranch = branches.find(branch => 
-            getDistance(userLat, userLng, branch.lat, branch.lng) <= maxDistance
-          );
+          let isNearBranch = false;
 
-          if (nearBranch) {
-            console.log("User is near a branch:", nearBranch.name); // Log the branch name
-            checkSubmissionDate();
-          } else {
+          branches.forEach(branch => {
+            const distance = getDistance(userLat, userLng, branch.lat, branch.lng);
+            console.log(`Distance to ${branch.name}:`, distance, "km"); // Log the distance to each branch
+
+            if (distance <= maxDistance) {
+              isNearBranch = true;
+              console.log("User is near a branch:", branch.name); // Log the branch name
+              checkSubmissionDate();
+            }
+          });
+
+          if (!isNearBranch) {
             console.log("User is not near any branch."); // Log if the user is not near a branch
             document.getElementById("warning").textContent = "❌ You must be at either the Accra or Takoradi branch to clock in.";
             document.getElementById("warning").style.display = "block";
           }
         }, error => {
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              console.error("User denied the request for Geolocation.");
-              document.getElementById("warning").textContent = "❌ Location access denied. Please enable GPS.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              console.error("Location information is unavailable.");
-              document.getElementById("warning").textContent = "❌ Location information is unavailable.";
-              break;
-            case error.TIMEOUT:
-              console.error("The request to get user location timed out.");
-              document.getElementById("warning").textContent = "❌ The request to get your location timed out.";
-              break;
-            default:
-              console.error("An unknown error occurred.");
-              document.getElementById("warning").textContent = "❌ An unknown error occurred while fetching your location.";
-              break;
-          }
+          console.error("Geolocation error:", error); // Log geolocation errors
+          document.getElementById("warning").textContent = "❌ Location access denied. Please enable GPS.";
           document.getElementById("warning").style.display = "block";
         });
       } else {
