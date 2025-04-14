@@ -2,76 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Clock In - Raloc Logistics</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" sizes="512x512" href="logo.png">
-  <link rel="apple-touch-icon" href="logo.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Raloc Clock-In">
-  <meta name="theme-color" content="#ffffff">
-  <link rel="manifest" href="/manifest.json">
-
-
-  <link rel="icon" href="logo.png" type="image/png">
+  <title>Clock-In System</title>
+  <link rel="manifest" href="manifest.json">
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f7f9;
       text-align: center;
-      padding: 40px;
+      margin: 0;
+      padding: 0;
     }
-    h1 {
-      color: #333;
+    .form-container {
+      display: none;
+      margin-top: 20px;
     }
     .warning {
       color: red;
       font-weight: bold;
       margin-top: 20px;
     }
-    .form-container {
-      display: none;
-      margin-top: 30px;
-    }
-    iframe {
-      border: none;
-      width: 100%;
-      height: 800px;
-      max-width: 700px;
-    }
-    .logo {
-      height: 120px;
-      margin-bottom: 20px;
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <!-- Logo (Optional) -->
-  <img src="logo.png" alt="Raloc Logistics Logo" class="logo">
-
-  <h1 id="pageTitle">Employee Clock-In</h1>
-  <p id="pageDescription">Please ensure you're at the office premises to clock in.</p>
-
-  <div class="warning" id="warning" style="display: none;">
-    ❌ You must be at either the Accra or Takoradi branch to clock in.
-  </div>
-
-  <div class="form-container" id="clockInForm" style="display: none;">
+  <h1>Clock-In System</h1>
+  <p>Click the button below to clock in:</p>
+  <button onclick="checkLocation()">Clock In</button>
+  <div class="warning" id="warning" style="display: none;"></div>
+  <div class="form-container" id="clockInForm">
     <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSe7gB2x7KmwUXK-AY9v0Vo0PvLJ2bQ6DaXOLlaSJ3wLF9C7Mw/viewform?embedded=true" allowfullscreen>Loading…</iframe>
   </div>
-
-  
-
   <script>
     const branches = [
       { name: "Accra", lat: 5.6580393, lng: -0.2651867 },
       { name: "Takoradi", lat: 4.897427, lng: -1.764115 }
     ];
-    const maxDistance = 1.5; // in kilometers
+    const maxDistance = 1; // in kilometers
+
+    function toRad(deg) {
+      return deg * Math.PI / 180;
+    }
 
     function getDistance(lat1, lon1, lat2, lon2) {
       const R = 6371; // Earth radius in kilometers
       const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lat2 - lon1);
+      const dLon = toRad(lon2 - lon1);
       const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -79,87 +58,45 @@
       return R * c;
     }
 
-    function toRad(deg) {
-      return deg * Math.PI / 180;
-    }
-
     function checkLocation() {
-      console.log("Checking location..."); // Confirm the function is running
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
 
-          console.log("User's Latitude:", userLat); // Log user's latitude
-          console.log("User's Longitude:", userLng); // Log user's longitude
-
-          // Check if the user is near any of the branches
-          const nearBranch = branches.find(branch => {
-            const distance = getDistance(userLat, userLng, branch.lat, branch.lng);
-            console.log(`Distance to ${branch.name}:`, distance, "km");
-            return distance <= maxDistance;
-          });
+          const nearBranch = branches.find(branch => 
+            getDistance(userLat, userLng, branch.lat, branch.lng) <= maxDistance
+          );
 
           if (nearBranch) {
-            console.log("User is near a branch:", nearBranch.name); // Log the branch name
             checkSubmissionDate();
           } else {
-            console.log("User is not near any branch."); // Log if the user is not near a branch
             document.getElementById("warning").textContent = "❌ You must be at either the Accra or Takoradi branch to clock in.";
             document.getElementById("warning").style.display = "block";
           }
         }, error => {
-          console.log("Location access error:", error); // Log location access errors
           document.getElementById("warning").textContent = "❌ Location access denied. Please enable GPS.";
           document.getElementById("warning").style.display = "block";
         });
       } else {
-        console.log("Geolocation is not supported by this browser."); // Log if geolocation is not supported
         document.getElementById("warning").textContent = "❌ Your browser does not support location services.";
         document.getElementById("warning").style.display = "block";
       }
     }
 
-    let clockInDate; // Define clockInDate globally
-
     function checkSubmissionDate() {
       const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
       const clockInDate = localStorage.getItem('clockInDate'); // Retrieve the last clock-in date from localStorage
 
-      console.log('Today\'s Date:', today); // Log today's date
-      console.log('Clock-In Date from Local Storage:', clockInDate); // Log the value of clockInDate
-
       if (clockInDate === today) {
-        // If the user has already clocked in today, show a warning
         document.getElementById("warning").textContent = "❌ You have already clocked in today.";
         document.getElementById("warning").style.display = "block";
-        document.getElementById("clockInForm").style.display = "none"; // Hide the clock-in form
       } else {
-        // If the user hasn't clocked in today, allow clock-in
-        allowClockIn();
+        localStorage.setItem('clockInDate', today); // Save today's date as the clock-in date
+        document.getElementById("clockInForm").style.display = "block"; // Show the clock-in form
+        document.getElementById("warning").style.display = "none"; // Hide any warnings
       }
     }
-
-    function allowClockIn() {
-      const today = new Date().toISOString().split('T')[0];
-      localStorage.setItem('clockInDate', today); // Save today's date as the clock-in date
-      document.getElementById("clockInForm").style.display = "block"; // Show the clock-in form
-      document.getElementById("warning").style.display = "none"; // Hide any warnings
-    }
-
-    function updatePageTitle() {
-      if (window.location.href.includes('clock-in')) {
-        document.getElementById('pageTitle').textContent = 'Employee Clock-In';
-        document.getElementById('pageDescription').textContent = 'Please ensure you\'re at the office premises to clock in.';
-      } else if (window.location.href.includes('clock-out')) {
-        document.getElementById('pageTitle').textContent = 'Employee Clock-Out';
-        document.getElementById('pageDescription').textContent = 'Please ensure you\'re at the office premises to clock out.';
-      }
-    }
-
-    window.onload = function() {
-      checkLocation(); // Check the user's location on page load
-    };
   </script>
 </body>
 </html>
