@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clock-In System</title>
   <link rel="manifest" href="manifest.json">
   <style>
@@ -12,22 +13,27 @@
       margin: 0;
       padding: 0;
     }
+
     .form-container {
       display: none;
       margin-top: 20px;
     }
+
     .warning {
       color: red;
       font-weight: bold;
       margin-top: 20px;
     }
-    button, input {
+
+    button,
+    input {
       padding: 10px;
       font-size: 16px;
       margin: 10px;
     }
   </style>
 </head>
+
 <body>
   <header>
     <img src="logo.png" alt="Company Logo" style="width: 150px; margin-top: 20px;">
@@ -43,7 +49,8 @@
   <div class="warning" id="warning" style="display: none;"></div>
 
   <div class="form-container" id="clockin-container">
-    <iframe id="clockin-iframe" width="640" height="800" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe>
+    <iframe id="clockin-iframe" width="640" height="800" frameborder="0" marginheight="0"
+      marginwidth="0">Loading...</iframe>
   </div>
 
   <script>
@@ -141,13 +148,16 @@
     }
 
     function checkDuplicate(fullName, callback) {
-      const scriptUrl ="https://script.google.com/macros/s/AKfycbz3NwWX6GU4OspTcWio-ZUOa_2pFvwLh4PMDRGErtdjAX67fLG1cUlYPA6D09IsFvufzA/exec";
-
+      const scriptUrl = "https://script.google.com/macros/s/AKfycbz3NwWX6GU4OspTcWio-ZUOa_2pFvwLh4PMDRGErtdjAX67fLG1cUlYPA6D09IsFvufzA/exec";
 
       fetch(`${scriptUrl}?fullName=${encodeURIComponent(fullName)}`)
-        .then(response => response.text())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text();
+        })
         .then(result => {
-          // Check if the result indicates a duplicate response
           if (result === "DUPLICATE") {
             document.getElementById("warning").textContent = "❌ You have already submitted today.";
             document.getElementById("warning").style.display = "block";
@@ -158,10 +168,34 @@
         })
         .catch(error => {
           console.error("Error checking duplicate:", error);
-          document.getElementById("warning").textContent = "❌ Error verifying submission. Try again later.";
+          document.getElementById("warning").textContent = `❌ Error verifying submission: ${error.message}. Try again later.`;
           document.getElementById("warning").style.display = "block";
         });
     }
+
+    // ...existing code...on checkDuplicate(fullName, callback) {
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbz3NwWX6GU4OspTcWio-ZUOa_2pFvwLh4PMDRGErtdjAX67fLG1cUlYPA6D09IsFvufzA/exec";
+
+
+    fetch(`${scriptUrl}?fullName=${encodeURIComponent(fullName)}`)
+      .then(response => response.text())
+      .then(result => {
+        // Check if the result indicates a duplicate response
+        if (result === "DUPLICATE") {
+          document.getElementById("warning").textContent = "❌ You have already submitted today.";
+          document.getElementById("warning").style.display = "block";
+          callback(true);
+        } else {
+          callback(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error checking duplicate:", error);
+        document.getElementById("warning").textContent = "❌ Error verifying submission. Try again later.";
+        document.getElementById("warning").style.display = "block";
+      });
+    }
   </script>
 </body>
+
 </html>
