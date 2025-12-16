@@ -143,7 +143,8 @@
     function checkDuplicate(fullName, callback) {
   const scriptUrl = "https://script.google.com/macros/s/AKfycbz3NwWX6GU4OspTcWio-ZUOa_2pFvwLh4PMDRGErtdjAX67fLG1cUlYPA6D09IsFvufzA/exec";
 
-  fetch(`${scriptUrl}?fullName=${encodeURIComponent(fullName)}`)
+  fetch(`/api/check-duplicate?fullName=${encodeURIComponent(fullName)}`)
+
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
