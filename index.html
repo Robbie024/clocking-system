@@ -111,10 +111,27 @@
     }
 
     function checkSubmissionDate(fullName) {
-      // Skip localStorage check and proceed directly to form
-      document.getElementById("clockin-container").style.display = "block";
-      document.getElementById("warning").style.display = "none";
-      loadFormWithTimestamp(fullName);
+      // Check if the user has already clocked in today
+      const today = new Date().toISOString().split('T')[0];
+      const scriptUrl = "https://script.google.com/macros/s/AKfycbwSDlXhRUnjK9NsrYQiWTlUS_6EPSJjikVvtm86yFJoUxAkL_413lUwdI2vwGCPqbpr/exec";
+
+      fetch(`${scriptUrl}?fullName=${encodeURIComponent(fullName)}&date=${today}`)
+        .then(response => response.text())
+        .then(result => {
+          if (result === "ALREADY_CLOCKED_IN") {
+            document.getElementById("warning").textContent = "❌ You have already clocked in today.";
+            document.getElementById("warning").style.display = "block";
+          } else {
+            document.getElementById("clockin-container").style.display = "block";
+            document.getElementById("warning").style.display = "none";
+            loadFormWithTimestamp(fullName);
+          }
+        })
+        .catch(error => {
+          console.error("Error checking submission date:", error);
+          document.getElementById("warning").textContent = "❌ Error verifying submission. Try again later.";
+          document.getElementById("warning").style.display = "block";
+        });
     }
 
     function loadFormWithTimestamp(fullName) {
