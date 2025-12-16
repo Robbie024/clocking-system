@@ -137,7 +137,7 @@
     function loadFormWithTimestamp(fullName) {
       const iframe = document.getElementById('clockin-iframe');
       const timestamp = Date.now();
-      iframe.src = `https://docs.google.com/forms/d/e/1FAIpQLSfs5WTxg_Uki715t7WbYR3Wu2HQz-XUaz-7R2pwSnPUMjJ0Dw/viewform?embedded=true&entry.648050963=${encodeURIComponent(fullName)}&entry.timestamp=${timestamp}`;
+      iframe.src = `https://docs.google.com/forms/d/e/1FAIpQLSfs5WTxg_Uki715t7WbYR3Wu2HQz-XUaz-7R2pwSnPUMjJ0Dw/viewform?embedded=true=${encodeURIComponent(fullName)}&entry.timestamp=${timestamp}`;
     }
 
     function checkDuplicate(fullName, callback) {
