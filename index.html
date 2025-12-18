@@ -84,14 +84,7 @@
             const distance = getDistance(userLat, userLng, branch.lat, branch.lng);
             if (distance <= maxDistance) {
               isNearBranch = true;
-              checkDuplicate(fullName, isDuplicate => {
-                if (isDuplicate) {
-                  document.getElementById("warning").textContent = "❌ You have already submitted today.";
-                  document.getElementById("warning").style.display = "block";
-                } else {
-                  checkSubmissionDate(fullName);
-                }
-              });
+              checkSubmissionDate(fullName);
             }
           });
 
@@ -139,33 +132,6 @@
       const timestamp = Date.now();
       iframe.src = `https://docs.google.com/forms/d/e/1FAIpQLSfs5WTxg_Uki715t7WbYR3Wu2HQz-XUaz-7R2pwSnPUMjJ0Dw/viewform?embedded=true&entry.648050963=${encodeURIComponent(fullName)}&entry.timestamp=${timestamp}`;
     }
-
-    function checkDuplicate(fullName, callback) {
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbz3NwWX6GU4OspTcWio-ZUOa_2pFvwLh4PMDRGErtdjAX67fLG1cUlYPA6D09IsFvufzA/exec";
-
-  fetch(`/api/check-duplicate?fullName=${encodeURIComponent(fullName)}`)
-
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.text();
-    })
-    .then(result => {
-      if (result === "DUPLICATE") {
-        document.getElementById("warning").textContent = "❌ You have already submitted today.";
-        document.getElementById("warning").style.display = "block";
-        callback(true);
-      } else {
-        callback(false);
-      }
-    })
-    .catch(error => {
-      console.error("Error checking duplicate:", error);
-      document.getElementById("warning").textContent = `❌ Error verifying submission: ${error.message}. Try again later.`;
-      document.getElementById("warning").style.display = "block";
-    });
-}
 
   </script>
 </body>
